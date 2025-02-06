@@ -10,9 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # ロギング設定
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s: %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 # サポートする言語（ISO 639-1コード）
@@ -77,9 +75,7 @@ class ReadmeTranslator:
             raise ValueError("Gemini API Keyが設定されていません")
 
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel(
-            "gemini-2.0-flash-exp", system_instruction=TRANSLATION_SYSTEM_PROMPT
-        )
+        self.model = genai.GenerativeModel("gemini-2.0-flash-exp", system_instruction=TRANSLATION_SYSTEM_PROMPT)
 
     def translate_text(self, text: str, target_language: str) -> str:
         """
@@ -102,7 +98,11 @@ class ReadmeTranslator:
             return ""
 
     def translate_readme(
-        self, input_file: str = "README.md", languages: Optional[List[str]] = None, folder: Optional[str] = None, exclude: Optional[List[str]] = None
+        self,
+        input_file: str = "README.md",
+        languages: Optional[List[str]] = None,
+        folder: Optional[str] = None,
+        exclude: Optional[List[str]] = None,
     ) -> None:
         """
         READMEファイルを指定言語に翻訳
@@ -166,21 +166,11 @@ def cli():
     コマンドラインインターフェース
     """
     parser = argparse.ArgumentParser(description="README多言語化ツール")
-    parser.add_argument(
-        "-f", "--file", default="README.md", help="翻訳元READMEファイルパス"
-    )
-    parser.add_argument(
-        "-l", "--languages", nargs="+", help="翻訳先言語コード（スペース区切り）"
-    )
-    parser.add_argument(
-        "--folder", help="翻訳対象のフォルダ"
-    )
-    parser.add_argument(
-        "--exclude", nargs="+", help="翻訳から除外するファイルまたはフォルダ"
-    )
-    parser.add_argument(
-        "--list-languages", action="store_true", help="サポート言語一覧を表示"
-    )
+    parser.add_argument("-f", "--file", default="README.md", help="翻訳元READMEファイルパス")
+    parser.add_argument("-l", "--languages", nargs="+", help="翻訳先言語コード（スペース区切り）")
+    parser.add_argument("--folder", help="翻訳対象のフォルダ")
+    parser.add_argument("--exclude", nargs="+", help="翻訳から除外するファイルまたはフォルダ")
+    parser.add_argument("--list-languages", action="store_true", help="サポート言語一覧を表示")
 
     args = parser.parse_args()
 
@@ -193,7 +183,9 @@ def cli():
 
     try:
         translator = ReadmeTranslator()
-        translator.translate_readme(input_file=args.file, languages=args.languages, folder=args.folder, exclude=args.exclude)
+        translator.translate_readme(
+            input_file=args.file, languages=args.languages, folder=args.folder, exclude=args.exclude
+        )
     except Exception as e:
         logger.error(f"エラー: {e}")
         sys.exit(1)
