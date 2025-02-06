@@ -136,6 +136,18 @@ readmeai_auto を始める前に、実行時環境が次の要件を満たして
 ❯ echo 'INSERT-RUN-COMMAND-HERE'
 ```
 
+#### フォルダの指定
+`--folder` パラメータを使用して、翻訳対象のフォルダを指定できます。
+```sh
+❯ python readme_translator.py --folder <フォルダパス>
+```
+
+#### 除外ファイル/フォルダの指定
+`--exclude` パラメータを使用して、翻訳から除外するファイルまたはフォルダを指定できます。
+```sh
+❯ python readme_translator.py --exclude <ファイル/フォルダパス>
+```
+
 ### テスト
 次のコマンドを使用してテストスイートを実行します。
 **`pip` を使用** &nbsp; [<img align="center" src="" />]()

@@ -99,7 +99,7 @@ class ReadmeTranslator:
             return ""
 
     def translate_readme(
-        self, input_file: str = "README.md", languages: Optional[List[str]] = None
+        self, input_file: str = "README.md", languages: Optional[List[str]] = None, folder: Optional[str] = None, exclude: Optional[List[str]] = None
     ) -> None:
         """
         READMEファイルを指定言語に翻訳
@@ -107,39 +107,52 @@ class ReadmeTranslator:
         Args:
             input_file (str): 翻訳元のREADMEファイルパス
             languages (List[str], optional): 翻訳先言語コード
+            folder (str, optional): 翻訳対象のフォルダ
+            exclude (List[str], optional): 翻訳から除外するファイルまたはフォルダ
         """
         try:
-            # ファイル存在チェック
-            if not os.path.exists(input_file):
-                logger.error(f"ファイルが見つかりません: {input_file}")
-                return
-
             # デフォルト言語設定
             if languages is None:
                 languages = list(SUPPORTED_LANGUAGES.keys())
 
-            # ファイル読み込み
-            with open(input_file, "r", encoding="utf-8") as file:
-                original_text = file.read()
+            # フォルダ内のファイルを再帰的に読み込む
+            files_to_translate = []
+            if folder:
+                for root, dirs, files in os.walk(folder):
+                    for file in files:
+                        file_path = os.path.join(root, file)
+                        if exclude and any(excluded in file_path for excluded in exclude):
+                            continue
+                        files_to_translate.append(file_path)
+            else:
+                files_to_translate.append(input_file)
 
-            # 翻訳と出力
-            for lang_code in languages:
-                if lang_code not in SUPPORTED_LANGUAGES:
-                    logger.warning(f"サポートされていない言語: {lang_code}")
+            # ファイルごとに翻訳と出力
+            for file_path in files_to_translate:
+                if not os.path.exists(file_path):
+                    logger.error(f"ファイルが見つかりません: {file_path}")
                     continue
 
-                try:
-                    lang_name = SUPPORTED_LANGUAGES[lang_code]
-                    translated_text = self.translate_text(original_text, lang_name)
+                with open(file_path, "r", encoding="utf-8") as file:
+                    original_text = file.read()
 
-                    output_file = f"README_{lang_code.upper()}.md"
-                    with open(output_file, "w", encoding="utf-8") as file:
-                        file.write(translated_text)
+                for lang_code in languages:
+                    if lang_code not in SUPPORTED_LANGUAGES:
+                        logger.warning(f"サポートされていない言語: {lang_code}")
+                        continue
 
-                    logger.info(f"{output_file}に{lang_name}版を出力")
+                    try:
+                        lang_name = SUPPORTED_LANGUAGES[lang_code]
+                        translated_text = self.translate_text(original_text, lang_name)
 
-                except Exception as lang_error:
-                    logger.error(f"{lang_name}版への翻訳中にエラー: {lang_error}")
+                        output_file = f"{os.path.splitext(file_path)[0]}_{lang_code.upper()}.md"
+                        with open(output_file, "w", encoding="utf-8") as file:
+                            file.write(translated_text)
+
+                        logger.info(f"{output_file}に{lang_name}版を出力")
+
+                    except Exception as lang_error:
+                        logger.error(f"{lang_name}版への翻訳中にエラー: {lang_error}")
 
         except Exception as e:
             logger.error(f"翻訳処理中にエラー: {e}")
@@ -157,6 +170,12 @@ def cli():
         "-l", "--languages", nargs="+", help="翻訳先言語コード（スペース区切り）"
     )
     parser.add_argument(
+        "--folder", help="翻訳対象のフォルダ"
+    )
+    parser.add_argument(
+        "--exclude", nargs="+", help="翻訳から除外するファイルまたはフォルダ"
+    )
+    parser.add_argument(
         "--list-languages", action="store_true", help="サポート言語一覧を表示"
     )
 
@@ -171,7 +190,7 @@ def cli():
 
     try:
         translator = ReadmeTranslator()
-        translator.translate_readme(input_file=args.file, languages=args.languages)
+        translator.translate_readme(input_file=args.file, languages=args.languages, folder=args.folder, exclude=args.exclude)
     except Exception as e:
         logger.error(f"エラー: {e}")
         sys.exit(1)
