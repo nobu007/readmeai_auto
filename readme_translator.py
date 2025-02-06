@@ -56,6 +56,8 @@ Follow these detailed guidelines when translating:
 
 7. **If the target language is the same as the original language, do not translate and output it as is.**
 
+8. **Do not leave the tags "<original_text>" and "</original_text>" srrounding the original text.**:
+
 Your goal is to deliver an accurate, high-quality translation that retains the integrity of the original content while making it accessible and engaging for the target audience.
 """
 
