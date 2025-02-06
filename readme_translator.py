@@ -56,6 +56,8 @@ Follow these detailed guidelines when translating:
    - Leave proper nouns, brand names, and file names unchanged unless explicitly requested.
    - Clearly differentiate between translatable text and untranslatable sections like code snippets or commands.
 
+7. **If the target language is the same as the original language, do not translate and output it as is.**
+
 Your goal is to deliver an accurate, high-quality translation that retains the integrity of the original content while making it accessible and engaging for the target audience.
 """
 
@@ -91,7 +93,8 @@ class ReadmeTranslator:
             str: 翻訳されたテキスト
         """
         try:
-            prompt = f"Translate the following README.md.\nIMPORTANT ORDER: [target language]={target_language}\n\n{text}"
+            additional_prompt = "Notice: If the target language is the same as the original language, do not translate and output it as is.\n"
+            prompt = f"<order>\nTranslate the following [original_text]. It is README.md.\n{additional_prompt}\nIMPORTANT ORDER: [target language]={target_language}\n</order>\n<original_text>\n{text}\n</original_text>"
             response = self.model.generate_content(prompt)
             return response.text
         except Exception as e:
