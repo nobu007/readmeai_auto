@@ -20,6 +20,7 @@ TOOL_DIR = os.path.dirname(os.path.abspath(__file__))
 PROMPTS_DIR = os.path.join(TOOL_DIR, "prompts")
 
 # サポートする言語（ISO 639-1コード）
+# lang_code: lang_name
 SUPPORTED_LANGUAGES = {
     "en": "English",
     "zh": "Chinese",
@@ -30,6 +31,11 @@ SUPPORTED_LANGUAGES = {
     "ko": "Korean",
     "ru": "Russian",
 }
+
+# 再翻訳しない対象リスト
+RETRANSLATION_EXCLUDED_FILES = []
+for lang_code_ in SUPPORTED_LANGUAGES.keys():
+    RETRANSLATION_EXCLUDED_FILES.append("_" + lang_code_.upper() + ".md")
 
 
 # システムプロンプトの読み込み
@@ -60,7 +66,7 @@ class ReadmeTranslator:
         self.system_prompt = load_translation_prompt(system_prompt_file)
         genai.configure(api_key=api_key)
         generation_config = generation_types.GenerationConfig()
-        generation_config.temperature = 1.0 # 何度生成しても同じ結果になるように固定
+        generation_config.temperature = 1.0  # 何度生成しても同じ結果になるように固定
         self.model = genai.GenerativeModel(
             "gemini-2.0-flash-exp", system_instruction=self.system_prompt, generation_config=generation_config
         )
@@ -112,6 +118,10 @@ class ReadmeTranslator:
                 for root, dirs, files in os.walk(folder):
                     for file in files:
                         file_path = os.path.join(root, file)
+                        # 再翻訳しないファイルのチェック
+                        if any(excluded in file for excluded in RETRANSLATION_EXCLUDED_FILES):
+                            continue
+                        # 除外ファイルのチェック
                         if exclude and any(excluded in file_path for excluded in exclude):
                             continue
                         files_to_translate.append(file_path)
