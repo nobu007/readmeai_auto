@@ -112,8 +112,14 @@ class ReadmeTranslator:
             if languages is None:
                 languages = list(SUPPORTED_LANGUAGES.keys())
 
-            # フォルダ内のファイルを再帰的に読み込む
+            # 翻訳対象ファイルのリスト
             files_to_translate = []
+
+            # input_fileのファイル
+            if input_file and os.path.isfile(input_file):
+                files_to_translate.append(input_file)
+
+            # folderのファイル
             if folder:
                 for root, dirs, files in os.walk(folder):
                     for file in files:
@@ -125,8 +131,6 @@ class ReadmeTranslator:
                         if exclude and any(excluded in file_path for excluded in exclude):
                             continue
                         files_to_translate.append(file_path)
-            else:
-                files_to_translate.append(input_file)
 
             # ファイルごとに翻訳と出力
             for file_path in files_to_translate:
