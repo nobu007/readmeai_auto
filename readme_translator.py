@@ -1,10 +1,12 @@
-import os
-import sys
 import argparse
 import logging
+import os
+import sys
 from typing import List, Optional
+
 import google.generativeai as genai
 from dotenv import load_dotenv
+from google.generativeai.types import generation_types
 
 # 環境変数の読み込み
 load_dotenv()
@@ -12,6 +14,10 @@ load_dotenv()
 # ロギング設定
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
+
+# ツールのディレクトリ取得
+TOOL_DIR = os.path.dirname(os.path.abspath(__file__))
+PROMPTS_DIR = os.path.join(TOOL_DIR, "prompts")
 
 # サポートする言語（ISO 639-1コード）
 SUPPORTED_LANGUAGES = {
@@ -33,7 +39,11 @@ def load_translation_prompt(file_path: str) -> str:
 
 
 class ReadmeTranslator:
-    def __init__(self, api_key: Optional[str] = None, system_prompt_file: str = "prompts/SYSTEM_PROMPT.md"):
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        system_prompt_file: str = os.path.join(PROMPTS_DIR, "SYSTEM_PROMPT.md"),
+    ):
         """
         READMEトランスレーターの初期化
 
@@ -49,7 +59,11 @@ class ReadmeTranslator:
 
         self.system_prompt = load_translation_prompt(system_prompt_file)
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel("gemini-2.0-flash-exp", system_instruction=self.system_prompt)
+        generation_config = generation_types.GenerationConfig()
+        generation_config.temperature = 1.0 # 何度生成しても同じ結果になるように固定
+        self.model = genai.GenerativeModel(
+            "gemini-2.0-flash-exp", system_instruction=self.system_prompt, generation_config=generation_config
+        )
 
     def translate_text(self, text: str, target_language: str) -> str:
         """
